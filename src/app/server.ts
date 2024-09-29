@@ -1,6 +1,6 @@
 import express from "express";
 import "dotenv/config";
-import pool from "../utils/mysql_database";
+import pool from "../utils/mysql-database";
 import cors from "cors";
 import path from "path";
 import cookieParser from "cookie-parser";
