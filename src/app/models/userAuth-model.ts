@@ -31,6 +31,35 @@ export interface UserType {
   createdAt: Date;
   updatedAt: Date;
 }
+export type ReturnQueryUserFullInfo =  [
+  user: UserType[],
+  otp:{
+    id: string;
+    code: number;
+    expiresIn: Date;
+  }[],
+  roles : {
+    id:number
+    title:string
+    user_id:string
+  }[]
+]
+export interface UserFullInfo  {
+  user:UserType
+  otp:{
+    id: string;
+    code: number;
+    expiresIn: Date;
+  }
+  roles : {
+    id:number
+    title:string
+    user_id:string
+  }[]
+}
+
+
+
 
 class UserAuthModel {
   static async authentication(
@@ -74,6 +103,21 @@ class UserAuthModel {
 
    return result as ResultQueryUpdateOrInsert
 
+  }
+  static async getFullUserInfo(id:string){
+    const [results]= await pool.query("CALL getUserInfo(?)",[id])
+
+    const returnQuery =  results as ReturnQueryUserFullInfo
+
+    const userFullinfo = {
+      user: returnQuery[0][0],
+      otp: returnQuery[1][0],
+      roles: returnQuery[2]
+    }
+   
+    return userFullinfo
+
+    
   }
 }
 

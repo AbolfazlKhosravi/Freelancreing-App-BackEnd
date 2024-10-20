@@ -7,6 +7,7 @@ import {
 } from "../../../utils/functions";
 import UserAuthModel, {
   ResultQueryUpdateOrInsert,
+  UserFullInfo,
 } from "../../models/userAuth-model";
 import Kavenegar from "kavenegar";
 import "dotenv/config";
@@ -92,9 +93,22 @@ class UserAuthController extends Controller implements UserAuthControllerType {
               phoneNumber,
             },
           });
-        return res.status(status).send({
-          statusCode: status,
-          message: "کد اعتبارسنجی ارسال نشد",
+
+        // return res.status(status).send({
+        //   statusCode: status,
+        //   message: "کد اعتبارسنجی ارسال نشد",
+        // });
+        //  اگر کاوه نگار رو راه اندازی کردی  این کد رو از کامنتی در بیار و کد بعدی رو پاک کن
+
+        return res.status(HttpStatus.OK).json({
+          statusCode: HttpStatus.OK,
+          data: {
+            message: `کد تائید برای شماره موبایل ${toPersianDigits(
+              phoneNumber
+            )} ارسال گردید`,
+            expiresIn: CODE_EXPIRES,
+            phoneNumber,
+          },
         });
       }
     );
@@ -117,7 +131,7 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     }
 
     const result = await UserAuthModel.updateisVerifiedPhoneNumber(user.id, 1);
-   
+
     if (result.affectedRows === 0) {
       throw createError.InternalServerError("ورود شما با خطا مواجه شد!");
     }
@@ -126,12 +140,13 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     let WELLCOME_MESSAGE = `کد تایید شد، خوش آمدید`;
     if (!user.isActive)
       WELLCOME_MESSAGE = `کد تایید شد، لطفا اطلاعات خود را تکمیل کنید`;
-
+   const userFullInfo:UserFullInfo= await UserAuthModel.getFullUserInfo(user.id)
+     
     res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
         message: WELLCOME_MESSAGE,
-        user,
+        userFullInfo,
       },
     });
   }

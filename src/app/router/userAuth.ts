@@ -2,7 +2,7 @@ import express from "express";
 import tryCatchHandler from "../../utils/try-catch-handler";
 import { Request, Response } from "express-serve-static-core";
 import userAuthController from "../http/controllers/userAuth-controller";
-import { UserType } from "../models/userAuth-model";
+import { UserFullInfo } from "../models/userAuth-model";
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ export type ResponseCheckOtp = Response<{
   message?: string;
   data?: {
     message: string;
-    user: UserType;
+    userFullInfo: UserFullInfo;
   };
 }>;
 
