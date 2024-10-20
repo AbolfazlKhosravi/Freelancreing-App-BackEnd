@@ -1,16 +1,24 @@
 import createError from "http-errors";
-import { Request, Response } from "express-serve-static-core";
 import {
   generateRandomeNumber,
+  setAccessToken,
+  setRefreshToken,
   toPersianDigits,
 } from "../../../utils/functions";
 import UserAuthModel, {
-  ResultAuthentication,
+  ResultQueryUpdateOrInsert,
 } from "../../models/userAuth-model";
 import Kavenegar from "kavenegar";
 import "dotenv/config";
 import { StatusCodes as HttpStatus } from "http-status-codes";
 import Controller from "./controller";
+import {
+  RequestCheckOtp,
+  RequestGetOtp,
+  ResponseCheckOtp,
+  ResponseGetOtp,
+} from "../../router/userAuth";
+import { checkOtpSchema, getOtpSchema } from "../validators/user-schema";
 
 interface UserAuthControllerType {
   code: string;
@@ -32,15 +40,8 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     this.code = "0";
   }
 
-  async getOtp(req: Request<{}, {}, { phoneNumber: string }>, res: Response<{
-    statusCode: number,
-    message?:string
-    data?: {
-      message: string,
-      expiresIn: number,
-      phoneNumber:string,
-    },
-  }>) {
+  async getOtp(req: RequestGetOtp, res: ResponseGetOtp) {
+    await getOtpSchema.validateAsync(req.body);
     let { phoneNumber } = req.body;
     if (!phoneNumber) {
       throw createError.BadRequest("شماره موبایل رو وارد کنید !");
@@ -50,29 +51,23 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     this.code = String(generateRandomeNumber(6));
 
     const result = await this.authentication(phoneNumber);
-    if (!result.affectedRows) {
+    if (result.affectedRows === 0) {
       throw createError.Unauthorized("ورود شما با خطا مواجه شد !");
     }
 
     this.sendOtp(phoneNumber, res);
   }
 
-  async authentication(phoneNumber: string): Promise<ResultAuthentication> {
+  async authentication(
+    phoneNumber: string
+  ): Promise<ResultQueryUpdateOrInsert> {
     const otp: Otp = {
       code: this.code,
       expiresIn: Date.now() + CODE_EXPIRES,
     };
     return await UserAuthModel.authentication(phoneNumber, otp);
   }
-  sendOtp(phoneNumber: string, res:Response<{
-    statusCode: number,
-    message?:string
-    data?: {
-      message: string,
-      expiresIn: number,
-      phoneNumber:string,
-    },
-  }>): void {
+  sendOtp(phoneNumber: string, res: ResponseGetOtp): void {
     const api = Kavenegar.KavenegarApi({
       apikey: `${process.env.KAVENEGAR_API_KEY}`,
     });
@@ -103,6 +98,42 @@ class UserAuthController extends Controller implements UserAuthControllerType {
         });
       }
     );
+  }
+
+  async checkOtp(req: RequestCheckOtp, res: ResponseCheckOtp) {
+    await checkOtpSchema.validateAsync(req.body);
+    const { otp: code, phoneNumber } = req.body;
+    const userArry = await UserAuthModel.findUserWithPhoneNumber(phoneNumber);
+    if (userArry.length === 0) {
+      throw createError.NotFound("کاربری با این شماره موبایل یافت نشد!");
+    }
+
+    const user = userArry[0];
+
+    const dataOtp = await UserAuthModel.checkOtp(user.id, code);
+
+    if (dataOtp.length === 0) {
+      throw createError.BadRequest("کد  ارسال شده معتبر نیست  !");
+    }
+
+    const result = await UserAuthModel.updateisVerifiedPhoneNumber(user.id, 1);
+   
+    if (result.affectedRows === 0) {
+      throw createError.InternalServerError("ورود شما با خطا مواجه شد!");
+    }
+    await setAccessToken(res, user);
+    await setRefreshToken(res, user);
+    let WELLCOME_MESSAGE = `کد تایید شد، خوش آمدید`;
+    if (!user.isActive)
+      WELLCOME_MESSAGE = `کد تایید شد، لطفا اطلاعات خود را تکمیل کنید`;
+
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: WELLCOME_MESSAGE,
+        user,
+      },
+    });
   }
 }
 
