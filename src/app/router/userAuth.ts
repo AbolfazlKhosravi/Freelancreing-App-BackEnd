@@ -52,6 +52,14 @@ export type ResponseRefreshToken = Response<{
   };
 }>;
 
+export type RequestGetUserProfile = Request;
+export type ResponseGetUserProfile = Response<{
+  statusCode: number;
+  data: {
+    user:UserFullInfo;
+  };
+}>;
+
 
 router.post(
   "/get-otp",
@@ -77,6 +85,14 @@ router.get(
   "/refresh-token",
   tryCatchHandler<RequestRefreshToken, ResponseRefreshToken>(
     userAuthController.refreshToken
+  )
+);
+
+router.get(
+  "/profile",
+  verifyAccessToken,
+  tryCatchHandler<RequestGetUserProfile, ResponseGetUserProfile>(
+    userAuthController.getUserProfile
   )
 );
 

@@ -18,10 +18,12 @@ import {
   RequestCheckOtp,
   RequestCompleteProfile,
   RequestGetOtp,
+  RequestGetUserProfile,
   RequestRefreshToken,
   ResponseCheckOtp,
   ResponseCompleteProfile,
   ResponseGetOtp,
+  ResponseGetUserProfile,
   ResponseRefreshToken,
 } from "../../router/userAuth";
 import {
@@ -212,6 +214,20 @@ class UserAuthController extends Controller implements UserAuthControllerType {
       statusCode: HttpStatus.OK,
       data: {
         user,
+      },
+    });
+  }
+  async getUserProfile(req:RequestGetUserProfile,res:ResponseGetUserProfile){
+    const  user  = req.user;
+    if (!user)
+      throw createError.Unauthorized("شماره موبایل خود را تایید کنید.");
+    const userFullInfo: UserFullInfo = await UserAuthModel.getFullUserInfo(
+      user.id
+    );
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        user:userFullInfo,
       },
     });
   }
