@@ -6,15 +6,20 @@ interface OtpDatabaseType {
   expiresIn: string;
 }
 
+interface UserRoles{
+  role_id: number;
+  user_id:string
+}
 export interface ResultQueryUpdateOrInsert {
   affectedRows: number;
 }
-export type ResultCheckOtp = {
-  id: string;
-  code: number;
-  expiresIn: Date;
-}|[];
-
+export type ResultCheckOtp =
+  | {
+      id: string;
+      code: number;
+      expiresIn: Date;
+    }
+  | [];
 
 export interface UserType {
   id: string;
@@ -31,35 +36,32 @@ export interface UserType {
   createdAt: Date;
   updatedAt: Date;
 }
-export type ReturnQueryUserFullInfo =  [
+export type ReturnQueryUserFullInfo = [
   user: UserType[],
-  otp:{
+  otp: {
     id: string;
     code: number;
     expiresIn: Date;
   }[],
-  roles : {
-    id:number
-    title:string
-    user_id:string
+  roles: {
+    id: number;
+    title: string;
+    user_id: string;
   }[]
-]
-export interface UserFullInfo  {
-  user:UserType
-  otp:{
+];
+export interface UserFullInfo {
+  user: UserType;
+  otp: {
     id: string;
     code: number;
     expiresIn: Date;
-  }
-  roles : {
-    id:number
-    title:string
-    user_id:string
-  }[]
+  };
+  roles: {
+    id: number;
+    title: string;
+    user_id: string;
+  }[];
 }
-
-
-
 
 class UserAuthModel {
   static async authentication(
@@ -90,6 +92,21 @@ class UserAuthModel {
     );
     return result as UserType[];
   }
+  static async findUserWithId(id: string): Promise<UserType[]> {
+    const [result] = await pool.query("SELECT * FROM users WHERE id = ?", [id]);
+    return result as UserType[];
+  }
+  static async findUserWithEmail(email: string): Promise<UserType[]> {
+    const [result] = await pool.query("SELECT * FROM users WHERE email = ?", [
+      email.trim(),
+    ]);
+    return result as UserType[];
+  }
+  static async getRolesUser(userId:string){
+    const [result]=await pool.query("SELECT * FROM user_roles WHERE user_id = ?",userId);
+
+    return result as UserRoles[]
+  }
   static async checkOtp(id: string, code: number) {
     const dateIso = new Date().toISOString().slice(0, 19).replace("T", " ");
     const [result] = await pool.query(
@@ -98,26 +115,48 @@ class UserAuthModel {
     );
     return result as ResultCheckOtp[];
   }
-  static async updateisVerifiedPhoneNumber(id:string,data:number){
-  const [result]=await pool.query("UPDATE users SET isVerifiedPhoneNumber=? WHERE id=? ",[data,id]);
+  static async updateisVerifiedPhoneNumber(id: string, data: number) {
+    const [result] = await pool.query(
+      "UPDATE users SET isVerifiedPhoneNumber=? WHERE id=? ",
+      [data, id]
+    );
 
-   return result as ResultQueryUpdateOrInsert
-
+    return result as ResultQueryUpdateOrInsert;
   }
-  static async getFullUserInfo(id:string){
-    const [results]= await pool.query("CALL getUserInfo(?)",[id])
+  static async getFullUserInfo(id: string) {
+    const [results] = await pool.query("CALL getUserInfo(?)", [id]);
 
-    const returnQuery =  results as ReturnQueryUserFullInfo
+    const returnQuery = results as ReturnQueryUserFullInfo;
 
     const userFullinfo = {
       user: returnQuery[0][0],
       otp: returnQuery[1][0],
-      roles: returnQuery[2]
-    }
-   
-    return userFullinfo
+      roles: returnQuery[2],
+    };
 
-    
+    return userFullinfo;
+  }
+  static async updateUserAndGetFullInfo(
+    id: string,
+    name: string,
+    email: string,
+    role: number
+  ) {
+    const [results] = await pool.query(
+      "CALL updateUserAndGetFullInfo(?,?,?,?)",
+      [id, name.trim(), email.trim(), role]
+    );
+
+    const returnQuery = results as ReturnQueryUserFullInfo;
+
+    const userFullinfo = {
+      user: returnQuery[0][0],
+      otp: returnQuery[1][0],
+      roles: returnQuery[2],
+    };
+    console.log(userFullinfo);
+
+    return userFullinfo;
   }
 }
 

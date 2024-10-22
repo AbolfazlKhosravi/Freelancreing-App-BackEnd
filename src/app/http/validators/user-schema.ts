@@ -19,3 +19,16 @@ export const checkOtpSchema = Joi.object({
     .pattern(/^09[0-9]{9}$/)
     .error(createHttpError.BadRequest("شماره موبایل وارد شده صحیح نمیباشد")),
 });
+export const completeProfileSchema = Joi.object({
+  name: Joi.string()
+    .min(5)
+    .max(100)
+    .error(createHttpError.BadRequest("نام کاربری وارد شده صحیح نمی باشد")),
+  email: Joi.string()
+    .email()
+    .error(createHttpError.BadRequest("ایمیل وارد شده صحیح نمی باشد")),
+  role: Joi.string()
+    .required()
+    .valid(2, 4)
+    .error(createHttpError.BadRequest("نقش وارد شده صحیح نمی باشد")),
+});

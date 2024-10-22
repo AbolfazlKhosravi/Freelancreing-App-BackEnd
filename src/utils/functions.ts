@@ -1,7 +1,10 @@
-import { Response } from "express-serve-static-core";
-import { UserType } from "../app/models/userAuth-model";
+import { Response ,Request} from "express-serve-static-core";
+import UserAuthModel, { UserType } from "../app/models/userAuth-model";
 import createHttpError from "http-errors";
 import JWT from "jsonwebtoken";
+import createError from "http-errors";
+import cookieParser from "cookie-parser";
+import "dotenv/config"
 export function generateRandomeNumber(length: number): number {
   if (length === 5) {
     return Math.floor(10000 + Math.random() * 90000);
@@ -83,3 +86,37 @@ function generateToken(
     );
   });
 }
+
+export function verifyRefreshToken(req:Request) {
+  const refreshToken = req.signedCookies["refreshToken"];
+  if (!refreshToken) {
+    throw createError.Unauthorized("لطفا وارد حساب کاربری خود شوید.");
+  }
+  const token = cookieParser.signedCookie(
+    refreshToken,
+    process.env.COOKIE_PARSER_SECRET_KEY || ""
+  );
+  if (!token) {
+    throw createError.Unauthorized("لطفا وارد حساب کاربری خود شوید.");
+  }
+  
+  return new Promise((resolve, reject) => {
+    JWT.verify(
+      token,
+      process.env.REFRESH_TOKEN_SECRET_KEY||"",
+      async (err, payload) => {
+        try {
+          if (err)
+            reject(createError.Unauthorized("لطفا حساب کاربری خود شوید"));
+          const { _id } = payload as {_id:string};
+          const user = await UserAuthModel.findUserWithId(_id);
+          if (!user.length) throw createHttpError.Unauthorized("حساب کاربری یافت نشد");
+          return resolve(_id);
+        } catch (error) {
+          reject(createError.Unauthorized("حساب کاربری یافت نشد"));
+        }
+      }
+    );
+  });
+}
+

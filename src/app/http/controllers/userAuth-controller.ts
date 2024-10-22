@@ -4,6 +4,7 @@ import {
   setAccessToken,
   setRefreshToken,
   toPersianDigits,
+  verifyRefreshToken,
 } from "../../../utils/functions";
 import UserAuthModel, {
   ResultQueryUpdateOrInsert,
@@ -15,11 +16,19 @@ import { StatusCodes as HttpStatus } from "http-status-codes";
 import Controller from "./controller";
 import {
   RequestCheckOtp,
+  RequestCompleteProfile,
   RequestGetOtp,
+  RequestRefreshToken,
   ResponseCheckOtp,
+  ResponseCompleteProfile,
   ResponseGetOtp,
+  ResponseRefreshToken,
 } from "../../router/userAuth";
-import { checkOtpSchema, getOtpSchema } from "../validators/user-schema";
+import {
+  checkOtpSchema,
+  completeProfileSchema,
+  getOtpSchema,
+} from "../validators/user-schema";
 
 interface UserAuthControllerType {
   code: string;
@@ -140,13 +149,69 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     let WELLCOME_MESSAGE = `کد تایید شد، خوش آمدید`;
     if (!user.isActive)
       WELLCOME_MESSAGE = `کد تایید شد، لطفا اطلاعات خود را تکمیل کنید`;
-   const userFullInfo:UserFullInfo= await UserAuthModel.getFullUserInfo(user.id)
-     
+    const userFullInfo: UserFullInfo = await UserAuthModel.getFullUserInfo(
+      user.id
+    );
+
     res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
         message: WELLCOME_MESSAGE,
         userFullInfo,
+      },
+    });
+  }
+  async completeProfile(
+    req: RequestCompleteProfile,
+    res: ResponseCompleteProfile
+  ) {
+    await completeProfileSchema.validateAsync(req.body);
+    const { user } = req;
+    const { name, email, role } = req.body;
+    if (!user?.isVerifiedPhoneNumber)
+      throw createError.Forbidden("شماره موبایل خود را تایید کنید.");
+    const duplicateUser = await UserAuthModel.findUserWithEmail(email);
+    if (duplicateUser.length)
+      throw createError.BadRequest(
+        "کاربری با این ایمیل قبلا ثبت نام کرده است."
+      );
+    const userRoles = await UserAuthModel.getRolesUser(user.id);
+    if (userRoles.length)
+      userRoles.forEach((userRole) => {
+        if (userRole.role_id === Number(role)) {
+          throw createError.BadRequest("شما همچین نقشی دارین!");
+        }
+      });
+
+    const updatedUser = await UserAuthModel.updateUserAndGetFullInfo(
+      user.id,
+      name,
+      email,
+      role
+    );
+
+    await setAccessToken(res, user);
+    await setRefreshToken(res, user);
+
+    res.status(HttpStatus.OK).send({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "اطلاعات شما با موفقیت تکمیل شد",
+        userFullInfo: updatedUser,
+      },
+    });
+  }
+  async refreshToken(req:RequestRefreshToken,res:ResponseRefreshToken){
+    
+    const userId = await verifyRefreshToken(req);
+    const userArray = await UserAuthModel.findUserWithId(String(userId));
+    const user=userArray[0];
+    await setAccessToken(res, user);
+    await setRefreshToken(res, user);
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        user,
       },
     });
   }
