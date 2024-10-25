@@ -10,6 +10,11 @@ interface UserRoles{
   role_id: number;
   user_id:string
 }
+interface FullUserRolesinfo{
+  id: number;
+  user_id:string
+  title:"OWNER"|"ADMIN"|"FREELANCER"|"USER"
+}
 export interface ResultQueryUpdateOrInsert {
   affectedRows: number;
 }
@@ -106,6 +111,11 @@ class UserAuthModel {
     const [result]=await pool.query("SELECT * FROM user_roles WHERE user_id = ?",userId);
 
     return result as UserRoles[]
+  }
+  static async getFullUserRolesInfo(userId:string){
+    const [result]=await pool.query("SELECT id,title,user_id FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?",userId);
+
+    return result as FullUserRolesinfo[]
   }
   static async checkOtp(id: string, code: number) {
     const dateIso = new Date().toISOString().slice(0, 19).replace("T", " ");

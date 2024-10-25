@@ -41,3 +41,21 @@ export async function verifyAccessToken(
     next(error);
   }
 }
+
+export async function isVerifiedUser(req:Request, _res:Response, next:NextFunction) {
+  try {
+    const user = req.user;
+    if(!user) throw createHttpError.Unauthorized("کاربری یافت نشد")
+    if (user.status === 1) {
+      throw createHttpError.Forbidden("پروفایل شما در انتظار بررسی است.");
+    }
+    if (user.status !== 2) {
+      throw createHttpError.Forbidden(
+        "پروفایل شما مورد تایید قرار نگرفته است."
+      );
+    }
+    return next();
+  } catch (error) {
+    next(error);
+  }
+}
