@@ -20,7 +20,15 @@ export type ResponseGetOwnerProjects = Response<{
       projectsTags: ProjectsTags[];
       projectsCategories: CategoryType[];
       freelancers: UserType[];
+    };
   };
+}>;
+
+export type RequestDeleteProject = Request<{ id: string }>;
+export type ResponseDeleteProject = Response<{
+  statusCode: number;
+  data: {
+    message: string;
   };
 }>;
 
@@ -32,6 +40,14 @@ router.get(
   authorize(ROLES.ADMIN, ROLES.OWNER),
   tryCatchHandler<RequestGetOwnerProjects, ResponseGetOwnerProjects>(
     ProjectController.getListOfOwnerProjects
+  )
+);
+
+router.delete(
+  "/:id",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestDeleteProject, ResponseDeleteProject>(
+    ProjectController.deleteProject
   )
 );
 

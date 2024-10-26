@@ -2,7 +2,7 @@ import pool from "../../utils/mysql-database";
 import { UserType } from "./userAuth-model";
 
 export interface ProjectType {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: "OPEN" | "CLOSED";
@@ -16,7 +16,7 @@ export interface ProjectType {
 export interface ProjectsTags {
   id: number;
   type: string;
-  project_id: number;
+  project_id: string;
 }
 export interface CategoryType {
   id: number;
@@ -30,12 +30,15 @@ export interface CategoryType {
 }
 export interface ProposalType {
   id: number;
-  projectId: number;
+  projectId: string;
   price: number;
   duration: number;
   userId: string;
   status: 0 | 1 | 2;
   createdAt: Date;
+}
+interface deleteProject {
+  affectedRows:number
 }
 
 class ProjectModel {
@@ -50,7 +53,7 @@ class ProjectModel {
 
     return result as ProjectType[];
   }
-  static async getDynamicProjectsTags(projectsId: number[] = []) {
+  static async getDynamicProjectsTags(projectsId: string[] = []) {
     let query =
       "SELECT id,type,project_id FROM project_tags pt INNER JOIN tags t ON pt.tag_id = t.id ";
 
@@ -73,7 +76,7 @@ class ProjectModel {
 
     return result as CategoryType[];
   }
-  static async getDynamicProjectsProposals(projectsId: number[] = []) {
+  static async getDynamicProjectsProposals(projectsId: string[] = []) {
     let query = "SELECT * FROM proposals";
     if (projectsId.length) {
       const placeholders = projectsId.map(() => "?").join(",");
@@ -128,6 +131,15 @@ class ProjectModel {
       projectsCategories,
       freelancers,
     };
+  }
+  static async getProjectByid(id:string){
+    const [result]=await pool.query(`SELECT * FROM projects WHERE id = ?`,[id])
+
+    return result as ProjectType[]
+  }
+  static async deleteProject(id:string){
+    const [result]= await pool.query(`DELETE FROM projects WHERE id = ?`,[id])
+    return result as deleteProject
   }
 }
 
