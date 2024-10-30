@@ -203,11 +203,10 @@ class UserAuthController extends Controller implements UserAuthControllerType {
       },
     });
   }
-  async refreshToken(req:RequestRefreshToken,res:ResponseRefreshToken){
-    
+  async refreshToken(req: RequestRefreshToken, res: ResponseRefreshToken) {
     const userId = await verifyRefreshToken(req);
     const userArray = await UserAuthModel.findUserWithId(String(userId));
-    const user=userArray[0];
+    const user = userArray[0];
     await setAccessToken(res, user);
     await setRefreshToken(res, user);
     res.status(HttpStatus.OK).json({
@@ -217,8 +216,11 @@ class UserAuthController extends Controller implements UserAuthControllerType {
       },
     });
   }
-  async getUserProfile(req:RequestGetUserProfile,res:ResponseGetUserProfile){
-    const  user  = req.user;
+  async getUserProfile(
+    req: RequestGetUserProfile,
+    res: ResponseGetUserProfile
+  ) {
+    const user = req.user;
     if (!user)
       throw createError.Unauthorized("شماره موبایل خود را تایید کنید.");
     const userFullInfo: UserFullInfo = await UserAuthModel.getFullUserInfo(
@@ -227,7 +229,7 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
-        user:userFullInfo,
+        user: userFullInfo,
       },
     });
   }

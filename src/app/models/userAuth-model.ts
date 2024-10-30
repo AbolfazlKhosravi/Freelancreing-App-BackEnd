@@ -154,7 +154,7 @@ class UserAuthModel {
   ) {
     const [results] = await pool.query(
       "CALL updateUserAndGetFullInfo(?,?,?,?)",
-      [id, name.trim(), email.trim(), role]
+      [id, name.trim(), email.trim(), Number(role)]
     );
 
     const returnQuery = results as ReturnQueryUserFullInfo;
@@ -164,7 +164,6 @@ class UserAuthModel {
       otp: returnQuery[1][0],
       roles: returnQuery[2],
     };
-    console.log(userFullinfo);
 
     return userFullinfo;
   }

@@ -107,7 +107,7 @@ export function verifyRefreshToken(req:Request) {
       async (err, payload) => {
         try {
           if (err)
-            reject(createError.Unauthorized("لطفا حساب کاربری خود شوید"));
+            reject(createError.Unauthorized("لطفا وارد حساب کاربری خود شوید"));
           const { _id } = payload as {_id:string};
           const user = await UserAuthModel.findUserWithId(_id);
           if (!user.length) throw createHttpError.Unauthorized("حساب کاربری یافت نشد");

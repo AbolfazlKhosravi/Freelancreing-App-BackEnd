@@ -27,7 +27,7 @@ export const completeProfileSchema = Joi.object({
   email: Joi.string()
     .email()
     .error(createHttpError.BadRequest("ایمیل وارد شده صحیح نمی باشد")),
-  role: Joi.string()
+  role: Joi.number()
     .required()
     .valid(2, 4)
     .error(createHttpError.BadRequest("نقش وارد شده صحیح نمی باشد")),
