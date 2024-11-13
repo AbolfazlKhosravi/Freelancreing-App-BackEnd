@@ -42,13 +42,13 @@ export interface UserType {
   updatedAt: Date;
 }
 export type ReturnQueryUserFullInfo = [
-  user: UserType[],
-  otp: {
+   UserType[],
+   {
     id: string;
     code: number;
     expiresIn: Date;
-  }[],
-  roles: {
+   }[],
+   {
     id: number;
     title: string;
     user_id: string;

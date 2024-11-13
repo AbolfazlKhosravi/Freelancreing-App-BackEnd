@@ -1,4 +1,5 @@
 import pool from "../../utils/mysql-database";
+import { ProjectInfo } from "../router/project";
 import { UserType } from "./userAuth-model";
 
 export interface ProjectType {
@@ -38,8 +39,12 @@ export interface ProposalType {
   createdAt: Date;
 }
 interface deleteProject {
-  affectedRows:number
+  affectedRows: number;
 }
+type CereateProject = [
+  [{ error_exist: 0 | 1 }],
+  { affectedRows: number; insertId: number }
+];
 
 class ProjectModel {
   static async getOwnerProjects(userId: string = "") {
@@ -132,14 +137,34 @@ class ProjectModel {
       freelancers,
     };
   }
-  static async getProjectByid(id:string){
-    const [result]=await pool.query(`SELECT * FROM projects WHERE id = ?`,[id])
+  static async getProjectByid(id: string) {
+    const [result] = await pool.query(`SELECT * FROM projects WHERE id = ?`, [
+      id,
+    ]);
 
-    return result as ProjectType[]
+    return result as ProjectType[];
   }
-  static async deleteProject(id:string){
-    const [result]= await pool.query(`DELETE FROM projects WHERE id = ?`,[id])
-    return result as deleteProject
+  static async deleteProject(id: string) {
+    const [result] = await pool.query(`DELETE FROM projects WHERE id = ?`, [
+      id,
+    ]);
+    return result as deleteProject;
+  }
+  static async CreateProject(data: ProjectInfo, ownerId: string) {
+    const { title, description, budget, deadline, category, tags } = data;
+
+    const [result] = await pool.query(`CALL CreateProject(?,?,?,?,?,?,?)`, [
+      title,
+      description,
+      budget,
+      deadline.slice(0, 19).replace("T", " "),
+      category,
+      JSON.stringify(tags),
+      ownerId,
+    ]);
+
+    const [queryResult] = result as CereateProject;
+    return queryResult[0]
   }
 }
 

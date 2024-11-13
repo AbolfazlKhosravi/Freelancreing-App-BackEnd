@@ -1,14 +1,16 @@
 import HttpStatus from "http-status-codes";
 import createHttpError from "http-errors";
 import {
+  RequestAddNewProject,
   RequestDeleteProject,
   RequestGetOwnerProjects,
+  ResponseAddNewProject,
   ResponseDeleteProject,
   ResponseGetOwnerProjects,
 } from "../../router/project";
 import Controller from "./controller";
 import ProjectModel from "../../models/project-model";
-import { removeProject } from "../validators/project-schema";
+import { addProjectSchema, removeProject } from "../validators/project-schema";
 
 class ProjectController extends Controller {
   constructor() {
@@ -58,6 +60,25 @@ class ProjectController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         message: `پروژه (${project.title}) با موفقیت حذف شد`,
+      },
+    });
+  }
+  async addNewProject(req:RequestAddNewProject, res:ResponseAddNewProject) {
+    const userId = req?.user?.id;
+    if (!userId) throw createHttpError.Unauthorized("کاربری یافت نشد!");
+    await addProjectSchema.validateAsync(req.body);
+
+    const result = await ProjectModel.CreateProject(req.body,userId)
+
+
+    
+    if (result?.error_exist)
+      throw createHttpError.InternalServerError("پروژه ثبت نشد");
+
+    res.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.CREATED,
+      data: {
+        message: "پروژه با موفقیت ایجاد شد",
       },
     });
   }
