@@ -11,6 +11,9 @@ import {
 } from "../models/project-model";
 import { UserType } from "../models/userAuth-model";
 
+const router = express.Router();
+const { ROLES } = constants;
+
 // GET_OENER_PROJECTS_TYPE
 export type RequestGetOwnerProjects = Request;
 export type ResponseGetOwnerProjects = Response<{
@@ -24,6 +27,14 @@ export type ResponseGetOwnerProjects = Response<{
     };
   };
 }>;
+router.get(
+  "/owner-projects",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestGetOwnerProjects, ResponseGetOwnerProjects>(
+    ProjectController.getListOfOwnerProjects
+  )
+);
+
 // DELETE_OWNER_PROJECT_TYPE
 export type RequestDeleteProject = Request<{ id: string }>;
 export type ResponseDeleteProject = Response<{
@@ -32,6 +43,14 @@ export type ResponseDeleteProject = Response<{
     message: string;
   };
 }>;
+
+router.delete(
+  "/:id",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestDeleteProject, ResponseDeleteProject>(
+    ProjectController.deleteProject
+  )
+);
 
 // CREATE_OWNER_PROJECT_TYPE
 export interface ProjectInfo {
@@ -49,30 +68,25 @@ export type ResponseAddNewProject = Response<{
     message: string;
   };
 }>;
-
-const router = express.Router();
-const { ROLES } = constants;
-
-router.get(
-  "/owner-projects",
-  authorize(ROLES.ADMIN, ROLES.OWNER),
-  tryCatchHandler<RequestGetOwnerProjects, ResponseGetOwnerProjects>(
-    ProjectController.getListOfOwnerProjects
-  )
-);
-
-router.delete(
-  "/:id",
-  authorize(ROLES.ADMIN, ROLES.OWNER),
-  tryCatchHandler<RequestDeleteProject, ResponseDeleteProject>(
-    ProjectController.deleteProject
-  )
-);
-
 router.post(
   "/add",
   authorize(ROLES.ADMIN, ROLES.OWNER),
   tryCatchHandler<RequestAddNewProject,ResponseAddNewProject>(ProjectController.addNewProject)
+);
+
+// update project
+export type RequestUpdateProject = Request<{id:string},{},ProjectInfo>;
+export type ResponseUpdateProject = Response<{
+  statusCode: number;
+  data: {
+    message: string;
+  };
+}>;
+
+router.patch(
+  "/update/:id",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestUpdateProject,ResponseUpdateProject>(ProjectController.updateProject)
 );
 
 export default router;

@@ -166,6 +166,23 @@ class ProjectModel {
     const [queryResult] = result as CereateProject;
     return queryResult[0]
   }
+  static async UpdateProject(data:ProjectInfo,id:string){
+    const { title, description, tags, deadline,budget,category} =data;
+
+    const [result] = await pool.query(`CALL UpdateProject(?,?,?,?,?,?,?)`, [
+      title,
+      description,
+      budget,
+      deadline.slice(0, 19).replace("T", " "),
+      category,
+      JSON.stringify(tags),
+      id,
+    ]);    
+
+    const [queryResult] = result as CereateProject;
+    return queryResult[0]
+
+  }
 }
 
 export default ProjectModel;

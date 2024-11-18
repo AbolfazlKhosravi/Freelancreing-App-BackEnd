@@ -4,9 +4,11 @@ import {
   RequestAddNewProject,
   RequestDeleteProject,
   RequestGetOwnerProjects,
+  RequestUpdateProject,
   ResponseAddNewProject,
   ResponseDeleteProject,
   ResponseGetOwnerProjects,
+  ResponseUpdateProject,
 } from "../../router/project";
 import Controller from "./controller";
 import ProjectModel from "../../models/project-model";
@@ -79,6 +81,24 @@ class ProjectController extends Controller {
       statusCode: HttpStatus.CREATED,
       data: {
         message: "پروژه با موفقیت ایجاد شد",
+      },
+    });
+  }
+
+  async updateProject(req:RequestUpdateProject, res:ResponseUpdateProject) {
+    await addProjectSchema.validateAsync(req.body);
+    const { id } = req.params;
+    await this.findProjectById(id);
+    
+
+    const result = await ProjectModel.UpdateProject(req.body,id)
+
+    if (result?.error_exist)
+      throw createHttpError.InternalServerError("به روزرسانی انجام نشد");
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "به روز رسانی با موفقیت انجام شد",
       },
     });
   }
