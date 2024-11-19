@@ -45,6 +45,9 @@ type CereateProject = [
   [{ error_exist: 0 | 1 }],
   { affectedRows: number; insertId: number }
 ];
+interface ChangeProjectStatus {
+  changedRows: number;
+}
 
 class ProjectModel {
   static async getOwnerProjects(userId: string = "") {
@@ -182,6 +185,17 @@ class ProjectModel {
     const [queryResult] = result as CereateProject;
     return queryResult[0]
 
+  }
+  static async ChangeProjectStatus(id:string,status:"OPEN"|"CLOSED"){
+
+    const [result] = await pool.query(`UPDATE projects SET status =? WHERE id =?`, [
+      status,
+      id,
+    ]);
+    console.log(result);
+    
+
+    return result as ChangeProjectStatus;
   }
 }
 

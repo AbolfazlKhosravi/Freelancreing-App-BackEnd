@@ -2,10 +2,12 @@ import HttpStatus from "http-status-codes";
 import createHttpError from "http-errors";
 import {
   RequestAddNewProject,
+  RequestChangeProjectStatus,
   RequestDeleteProject,
   RequestGetOwnerProjects,
   RequestUpdateProject,
   ResponseAddNewProject,
+  ResponseChangeProjectStatus,
   ResponseDeleteProject,
   ResponseGetOwnerProjects,
   ResponseUpdateProject,
@@ -65,15 +67,13 @@ class ProjectController extends Controller {
       },
     });
   }
-  async addNewProject(req:RequestAddNewProject, res:ResponseAddNewProject) {
+  async addNewProject(req: RequestAddNewProject, res: ResponseAddNewProject) {
     const userId = req?.user?.id;
     if (!userId) throw createHttpError.Unauthorized("کاربری یافت نشد!");
     await addProjectSchema.validateAsync(req.body);
 
-    const result = await ProjectModel.CreateProject(req.body,userId)
+    const result = await ProjectModel.CreateProject(req.body, userId);
 
-
-    
     if (result?.error_exist)
       throw createHttpError.InternalServerError("پروژه ثبت نشد");
 
@@ -85,13 +85,12 @@ class ProjectController extends Controller {
     });
   }
 
-  async updateProject(req:RequestUpdateProject, res:ResponseUpdateProject) {
+  async updateProject(req: RequestUpdateProject, res: ResponseUpdateProject) {
     await addProjectSchema.validateAsync(req.body);
     const { id } = req.params;
     await this.findProjectById(id);
-    
 
-    const result = await ProjectModel.UpdateProject(req.body,id)
+    const result = await ProjectModel.UpdateProject(req.body, id);
 
     if (result?.error_exist)
       throw createHttpError.InternalServerError("به روزرسانی انجام نشد");
@@ -99,6 +98,30 @@ class ProjectController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         message: "به روز رسانی با موفقیت انجام شد",
+      },
+    });
+  }
+
+  async changeProjectStatus(
+    req: RequestChangeProjectStatus,
+    res: ResponseChangeProjectStatus
+  ) {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const result = await ProjectModel.ChangeProjectStatus(id, status);
+
+    if (result.changedRows === 0) {
+      throw createHttpError.InternalServerError(" وضعیت پروپوزال آپدیت نشد");
+    }
+
+    let message = "پروژه بسته شد";
+    if (status === "OPEN") message = "وضعیت پروژه به حالت باز تغییر یافت";
+
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message,
       },
     });
   }

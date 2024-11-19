@@ -61,7 +61,7 @@ export interface ProjectInfo {
   deadline: string;
   tags: string[];
 }
-export type RequestAddNewProject = Request<{},{},ProjectInfo>;
+export type RequestAddNewProject = Request<{}, {}, ProjectInfo>;
 export type ResponseAddNewProject = Response<{
   statusCode: number;
   data: {
@@ -71,11 +71,13 @@ export type ResponseAddNewProject = Response<{
 router.post(
   "/add",
   authorize(ROLES.ADMIN, ROLES.OWNER),
-  tryCatchHandler<RequestAddNewProject,ResponseAddNewProject>(ProjectController.addNewProject)
+  tryCatchHandler<RequestAddNewProject, ResponseAddNewProject>(
+    ProjectController.addNewProject
+  )
 );
 
 // update project
-export type RequestUpdateProject = Request<{id:string},{},ProjectInfo>;
+export type RequestUpdateProject = Request<{ id: string }, {}, ProjectInfo>;
 export type ResponseUpdateProject = Response<{
   statusCode: number;
   data: {
@@ -86,7 +88,31 @@ export type ResponseUpdateProject = Response<{
 router.patch(
   "/update/:id",
   authorize(ROLES.ADMIN, ROLES.OWNER),
-  tryCatchHandler<RequestUpdateProject,ResponseUpdateProject>(ProjectController.updateProject)
+  tryCatchHandler<RequestUpdateProject, ResponseUpdateProject>(
+    ProjectController.updateProject
+  )
+);
+
+// Change status of project
+
+export type RequestChangeProjectStatus = Request<
+  { id: string },
+  {},
+  { status: "OPEN" | "CLOSED" }
+>;
+export type ResponseChangeProjectStatus = Response<{
+  statusCode: number;
+  data: {
+    message: string;
+  };
+}>;
+
+router.patch(
+  "/:id",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestChangeProjectStatus, ResponseChangeProjectStatus>(
+    ProjectController.changeProjectStatus
+  )
 );
 
 export default router;
