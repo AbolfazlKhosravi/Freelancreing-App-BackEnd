@@ -1,6 +1,7 @@
 import createError from "http-errors";
 import {
   generateRandomeNumber,
+  logout,
   setAccessToken,
   setRefreshToken,
   toPersianDigits,
@@ -19,11 +20,13 @@ import {
   RequestCompleteProfile,
   RequestGetOtp,
   RequestGetUserProfile,
+  RequestLogout,
   RequestRefreshToken,
   ResponseCheckOtp,
   ResponseCompleteProfile,
   ResponseGetOtp,
   ResponseGetUserProfile,
+  ResponseLogout,
   ResponseRefreshToken,
 } from "../../router/userAuth";
 import {
@@ -229,7 +232,16 @@ class UserAuthController extends Controller implements UserAuthControllerType {
     res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: {
-        user: userFullInfo,
+        userFullInfo,
+      },
+    });
+  }
+  async logout(_req: RequestLogout, res: ResponseLogout) {
+    logout(res);
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: "با موفقعیت از حساب خود خارج شدید",
       },
     });
   }

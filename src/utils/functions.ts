@@ -1,10 +1,10 @@
-import { Response ,Request} from "express-serve-static-core";
+import { Response, Request } from "express-serve-static-core";
 import UserAuthModel, { UserType } from "../app/models/userAuth-model";
 import createHttpError from "http-errors";
 import JWT from "jsonwebtoken";
 import createError from "http-errors";
 import cookieParser from "cookie-parser";
-import "dotenv/config"
+import "dotenv/config";
 export function generateRandomeNumber(length: number): number {
   if (length === 5) {
     return Math.floor(10000 + Math.random() * 90000);
@@ -41,10 +41,17 @@ export async function setAccessToken(
     }
   );
 }
-export async function setRefreshToken(res:Response, user:UserType):Promise<void> {
+export async function setRefreshToken(
+  res: Response,
+  user: UserType
+): Promise<void> {
   res.cookie(
     "refreshToken",
-    await generateToken(user,process.env.REFRESH_TOKEN_EXPIRES_IN, process.env.REFRESH_TOKEN_SECRET_KEY),
+    await generateToken(
+      user,
+      process.env.REFRESH_TOKEN_EXPIRES_IN,
+      process.env.REFRESH_TOKEN_SECRET_KEY
+    ),
     {
       maxAge: 1000 * 60 * 60 * 24 * 365, // would expire after 1 year
       httpOnly: true, // The cookie only accessible by the web server
@@ -87,7 +94,7 @@ function generateToken(
   });
 }
 
-export function verifyRefreshToken(req:Request) {
+export function verifyRefreshToken(req: Request) {
   const refreshToken = req.signedCookies["refreshToken"];
   if (!refreshToken) {
     throw createError.Unauthorized("لطفا وارد حساب کاربری خود شوید.");
@@ -99,18 +106,19 @@ export function verifyRefreshToken(req:Request) {
   if (!token) {
     throw createError.Unauthorized("لطفا وارد حساب کاربری خود شوید.");
   }
-  
+
   return new Promise((resolve, reject) => {
     JWT.verify(
       token,
-      process.env.REFRESH_TOKEN_SECRET_KEY||"",
+      process.env.REFRESH_TOKEN_SECRET_KEY || "",
       async (err, payload) => {
         try {
           if (err)
             reject(createError.Unauthorized("لطفا وارد حساب کاربری خود شوید"));
-          const { _id } = payload as {_id:string};
+          const { _id } = payload as { _id: string };
           const user = await UserAuthModel.findUserWithId(_id);
-          if (!user.length) throw createHttpError.Unauthorized("حساب کاربری یافت نشد");
+          if (!user.length)
+            throw createHttpError.Unauthorized("حساب کاربری یافت نشد");
           return resolve(_id);
         } catch (error) {
           reject(createError.Unauthorized("حساب کاربری یافت نشد"));
@@ -119,4 +127,27 @@ export function verifyRefreshToken(req:Request) {
     );
   });
 }
+export function logout(res: Response) {
+  const cookieOptions: {
+    maxAge: number;
+    expires: Date;
+    httpOnly: boolean;
+    signed: boolean;
+    sameSite: "lax";
+    secure: boolean;
+    path: string;
+    domain: string | undefined;
+  } = {
+    maxAge: 1,
+    expires: new Date(Date.now() + 1),
+    httpOnly: true,
+    signed: true,
+    sameSite: "lax",
+    secure: true,
+    path: "/",
+    domain: process.env.DOMAIN,
+  };
 
+  res.cookie("accessToken", "", cookieOptions);
+  res.cookie("refreshToken", "", cookieOptions);
+}

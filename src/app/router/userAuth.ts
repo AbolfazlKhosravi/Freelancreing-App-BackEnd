@@ -1,7 +1,7 @@
 import express from "express";
 import tryCatchHandler from "../../utils/try-catch-handler";
 import { Request, Response } from "express-serve-static-core";
-import userAuthController from "../http/controllers/userAuth-controller";
+import UserAuthController from "../http/controllers/userAuth-controller";
 import { UserFullInfo, UserType } from "../models/userAuth-model";
 import { verifyAccessToken } from "../http/middlewares/user-middleware";
 
@@ -48,7 +48,7 @@ export type RequestRefreshToken = Request;
 export type ResponseRefreshToken = Response<{
   statusCode: number;
   data: {
-    user:UserType;
+    user: UserType;
   };
 }>;
 
@@ -56,20 +56,19 @@ export type RequestGetUserProfile = Request;
 export type ResponseGetUserProfile = Response<{
   statusCode: number;
   data: {
-    user:UserFullInfo;
+    userFullInfo: UserFullInfo;
   };
 }>;
 
-
 router.post(
   "/get-otp",
-  tryCatchHandler<RequestGetOtp, ResponseGetOtp>(userAuthController.getOtp)
+  tryCatchHandler<RequestGetOtp, ResponseGetOtp>(UserAuthController.getOtp)
 );
 
 router.post(
   "/check-otp",
   tryCatchHandler<RequestCheckOtp, ResponseCheckOtp>(
-    userAuthController.checkOtp
+    UserAuthController.checkOtp
   )
 );
 
@@ -77,14 +76,14 @@ router.post(
   "/complete-profile",
   verifyAccessToken,
   tryCatchHandler<RequestCompleteProfile, ResponseCompleteProfile>(
-    userAuthController.completeProfile
+    UserAuthController.completeProfile
   )
 );
 
 router.get(
   "/refresh-token",
   tryCatchHandler<RequestRefreshToken, ResponseRefreshToken>(
-    userAuthController.refreshToken
+    UserAuthController.refreshToken
   )
 );
 
@@ -92,8 +91,21 @@ router.get(
   "/profile",
   verifyAccessToken,
   tryCatchHandler<RequestGetUserProfile, ResponseGetUserProfile>(
-    userAuthController.getUserProfile
+    UserAuthController.getUserProfile
   )
+);
+
+export type RequestLogout=Request
+export type ResponseLogout = Response<{
+  statusCode: number;
+  data: {
+    message: string;
+  };
+}>;
+
+router.post(
+  "/logout",
+  tryCatchHandler<RequestLogout, ResponseLogout>(UserAuthController.logout)
 );
 
 export default router;
