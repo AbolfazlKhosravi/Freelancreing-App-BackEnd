@@ -5,11 +5,13 @@ import {
   RequestChangeProjectStatus,
   RequestDeleteProject,
   RequestGetOwnerProjects,
+  RequestGetProjectByIdAndProposals,
   RequestUpdateProject,
   ResponseAddNewProject,
   ResponseChangeProjectStatus,
   ResponseDeleteProject,
   ResponseGetOwnerProjects,
+  ResponseGetProjectByIdAndProposals,
   ResponseUpdateProject,
 } from "../../router/project";
 import Controller from "./controller";
@@ -122,6 +124,24 @@ class ProjectController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         message,
+      },
+    });
+  }
+  async getProjectByIdAndProposals(
+    req: RequestGetProjectByIdAndProposals,
+    res: ResponseGetProjectByIdAndProposals
+  ) {
+    const { id } = req.params;
+    const projectInfo = await this.findProjectById(id);
+    const projectProposals = await ProjectModel.getProjectProposals(id);
+    const projectInfoAndProposals = {
+      projectInfo,
+      proposalList:projectProposals
+    };
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        projectInfoAndProposals,
       },
     });
   }

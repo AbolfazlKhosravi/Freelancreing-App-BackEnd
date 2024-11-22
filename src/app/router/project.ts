@@ -8,6 +8,7 @@ import {
   CategoryType,
   ProjectsTags,
   ProjectType,
+  Proposal,
 } from "../models/project-model";
 import { UserType } from "../models/userAuth-model";
 
@@ -113,6 +114,28 @@ router.patch(
   tryCatchHandler<RequestChangeProjectStatus, ResponseChangeProjectStatus>(
     ProjectController.changeProjectStatus
   )
+);
+
+// get ProjectById And Proposals
+
+export type RequestGetProjectByIdAndProposals = Request<
+  { id: string }
+>;
+export type ResponseGetProjectByIdAndProposals = Response<{
+  statusCode: number;
+  data: {
+    projectInfoAndProposals: {
+      projectInfo: ProjectType;
+      proposalList: Proposal[];
+    };
+  };
+}>;
+
+
+router.get(
+  "/:id",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestGetProjectByIdAndProposals,ResponseGetProjectByIdAndProposals>(ProjectController.getProjectByIdAndProposals)
 );
 
 export default router;

@@ -29,12 +29,14 @@ export interface CategoryType {
   icon_sm: string;
   icon_lg: string;
 }
-export interface ProposalType {
+export interface Proposal {
   id: number;
   projectId: string;
   price: number;
   duration: number;
+  description?: string;
   userId: string;
+  userName: string;
   status: 0 | 1 | 2;
   createdAt: Date;
 }
@@ -92,7 +94,7 @@ class ProjectModel {
     }
     const [result] = await pool.query(query, projectsId);
 
-    return result as ProposalType[];
+    return result as Proposal[];
   }
   static async getDynamicFreelancersProjects(freelancersId: string[]) {
     let query = "SELECT * FROM users";
@@ -167,10 +169,10 @@ class ProjectModel {
     ]);
 
     const [queryResult] = result as CereateProject;
-    return queryResult[0]
+    return queryResult[0];
   }
-  static async UpdateProject(data:ProjectInfo,id:string){
-    const { title, description, tags, deadline,budget,category} =data;
+  static async UpdateProject(data: ProjectInfo, id: string) {
+    const { title, description, tags, deadline, budget, category } = data;
 
     const [result] = await pool.query(`CALL UpdateProject(?,?,?,?,?,?,?)`, [
       title,
@@ -180,22 +182,26 @@ class ProjectModel {
       category,
       JSON.stringify(tags),
       id,
-    ]);    
+    ]);
 
     const [queryResult] = result as CereateProject;
-    return queryResult[0]
-
+    return queryResult[0];
   }
-  static async ChangeProjectStatus(id:string,status:"OPEN"|"CLOSED"){
-
-    const [result] = await pool.query(`UPDATE projects SET status =? WHERE id =?`, [
-      status,
-      id,
-    ]);
-    console.log(result);
-    
+  static async ChangeProjectStatus(id: string, status: "OPEN" | "CLOSED") {
+    const [result] = await pool.query(
+      `UPDATE projects SET status =? WHERE id =?`,
+      [status, id]
+    );
 
     return result as ChangeProjectStatus;
+  }
+  static async getProjectProposals(id: string) {
+    const [result] = await pool.query(`SELECT p.*,u.name as userName FROM proposals as p INNER JOIN  users as u on p.userId=u.id where p.projectId=?`,[id]);
+    return result as Proposal[];
+  }
+  static async AcceptFreelancer(projectId:string, freelancerId:string|null){
+    const [result]=await pool.query(`UPDATE projects SET freelancer= ? WHERE id=?`,[freelancerId,projectId]);
+    return result as deleteProject;
   }
 }
 
