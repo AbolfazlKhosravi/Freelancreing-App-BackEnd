@@ -44,5 +44,22 @@ router.get(
   tryCatchHandler<RequestGetListOfProposals,ResponseGetListOfProposals>(proposalController.getListOfProposals)
 );
 
+export type RequestAddNewProposal = Request<
+  {},
+  {},
+  {
+    description: string;
+    price: number;
+    duration: number;
+    projectId:string;
+  }
+>;
+
+router.post(
+  "/add",
+  authorize(ROLES.FREELANCER, ROLES.ADMIN),
+  tryCatchHandler<RequestAddNewProposal,ResponseChangeProposalStatus>(proposalController.addNewProposal)
+);
+
 
 export default router;

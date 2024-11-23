@@ -2,6 +2,7 @@ import HttpStatus from "http-status-codes";
 import createHttpError from "http-errors";
 import ProposaleModel from "../../models/proposale-model";
 import {
+  RequestAddNewProposal,
   RequestChangeProposalStatus,
   RequestGetListOfProposals,
   ResponseChangeProposalStatus,
@@ -10,6 +11,7 @@ import {
 import Controller from "./controller";
 import ProjectModel from "../../models/project-model";
 import projectController from "./project-controller";
+import addProposalSchema from "../validators/proposal-schema";
 
 class ProposalController extends Controller {
   async changeProposalStatus(
@@ -87,6 +89,33 @@ class ProposalController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         proposals,
+      },
+    });
+  }
+  async addNewProposal(
+    req: RequestAddNewProposal,
+    res: ResponseChangeProposalStatus
+  ) {
+    const user = req.user;
+    if (!user) return;
+    await addProposalSchema.validateAsync(req.body);
+    const { description, price, duration, projectId } = req.body;
+
+    const result = await ProposaleModel.addProposals(
+      description,
+      price,
+      duration,
+      projectId,
+      user.id
+    );
+    if (result.insertId === 0) {
+      throw createHttpError.InternalServerError("پروژه اضافه نشد");
+    }
+
+    res.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.CREATED,
+      data: {
+        message: "پیشنهاد با موفقیت ایجاد شد",
       },
     });
   }
