@@ -26,7 +26,7 @@ export type ResponseChangeProposalStatus = Response<{
 
 router.patch(
   "/:id",
-  authorize(ROLES.ADMIN, ROLES.USER),
+  authorize(ROLES.ADMIN, ROLES.OWNER),
   tryCatchHandler<RequestChangeProposalStatus,ResponseChangeProposalStatus>(proposalController.changeProposalStatus)
 );
 
