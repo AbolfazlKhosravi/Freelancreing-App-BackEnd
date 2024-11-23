@@ -159,7 +159,7 @@ class ProjectModel {
       [userId]
     );
     const [proposalsInfo] = result as OwnerProjectsProposalsCount[];
- const proposalsCount=   proposalsInfo.count
+    const proposalsCount = proposalsInfo.count;
     return {
       ownerProjects,
       proposalsCount,
@@ -227,11 +227,12 @@ class ProjectModel {
   }
   static async AcceptFreelancer(
     projectId: string,
-    freelancerId: string | null
+    freelancerId: string | null,
+    statusProject: "OPEN" | "CLOSED"
   ) {
     const [result] = await pool.query(
-      `UPDATE projects SET freelancer= ? WHERE id=?`,
-      [freelancerId, projectId]
+      `UPDATE projects SET freelancer= ?,status=? WHERE id=?`,
+      [freelancerId, statusProject, projectId]
     );
     return result as deleteProject;
   }

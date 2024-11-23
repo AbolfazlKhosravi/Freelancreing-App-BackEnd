@@ -7,6 +7,7 @@ import {
 } from "../../router/proposal";
 import Controller from "./controller";
 import ProjectModel from "../../models/project-model";
+import projectController from "./project-controller";
 
 class ProposalController extends Controller {
   async changeProposalStatus(
@@ -37,15 +38,22 @@ class ProposalController extends Controller {
     if (resultChangeProposalStatus.affectedRows === 0) {
       throw createHttpError.InternalServerError("وضعیت تغییر نکرد");
     }
+    const project = await await projectController.findProjectById(projectId);
 
     const proposalArray = await ProposaleModel.findAcceptProposal(projectId, 2);
     let freelancerId: string | null = null;
+    let statusProject = project.status;
     if (proposalArray.length) {
       const proposal = proposalArray[0];
       freelancerId = proposal.userId;
+      statusProject = "CLOSED";
     }
 
-    const result = await ProjectModel.AcceptFreelancer(projectId, freelancerId);
+    const result = await ProjectModel.AcceptFreelancer(
+      projectId,
+      freelancerId,
+      statusProject
+    );
 
     if (result.affectedRows === 0) {
       throw createHttpError.InternalServerError("برنامه به مشکل برخورد");

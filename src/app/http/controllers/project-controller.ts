@@ -131,6 +131,11 @@ class ProjectController extends Controller {
     const { id } = req.params;
     const { status } = req.body;
 
+    const project=await this.findProjectById(id);
+    if(project.freelancer&&status==="OPEN"){
+      throw createHttpError.BadRequest("برای این پروژه درخواستی قبول شده امکان  باز کردن ان نیست !")
+    }
+
     const result = await ProjectModel.ChangeProjectStatus(id, status);
 
     if (result.changedRows === 0) {
