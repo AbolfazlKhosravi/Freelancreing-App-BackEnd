@@ -4,6 +4,7 @@ import authorize from "../http/middlewares/permission.guard";
 import tryCatchHandler from "../../utils/try-catch-handler";
 import { Request, Response } from "express-serve-static-core";
 import proposalController from "../http/controllers/proposal-controller";
+import { ProposalBaseInfo } from "../models/proposale-model";
 
 const router = express.Router();
 const { ROLES } = constants;
@@ -28,5 +29,20 @@ router.patch(
   authorize(ROLES.ADMIN, ROLES.USER),
   tryCatchHandler<RequestChangeProposalStatus,ResponseChangeProposalStatus>(proposalController.changeProposalStatus)
 );
+
+export type RequestGetListOfProposals = Request;
+export type ResponseGetListOfProposals = Response<{
+  statusCode: number;
+  data: {
+    proposals: ProposalBaseInfo[];
+  };
+}>;
+
+router.get(
+  "/list",
+  authorize(ROLES.FREELANCER, ROLES.ADMIN),
+  tryCatchHandler<RequestGetListOfProposals,ResponseGetListOfProposals>(proposalController.getListOfProposals)
+);
+
 
 export default router;

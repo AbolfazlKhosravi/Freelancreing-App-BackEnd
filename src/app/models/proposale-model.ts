@@ -1,7 +1,7 @@
 import pool from "../../utils/mysql-database";
 
 
-interface ProposalBaseInfo {
+export interface ProposalBaseInfo {
     id: number;
     projectId: string;
     price: number;
@@ -26,6 +26,10 @@ class ProposaleModel {
   }
   static async getListOfProposals(projectId:string){
     const [result]=await pool.query(`SELECT * FROM proposals WHERE projectId=?`,[projectId])
+    return result as ProposalBaseInfo[]
+  }
+  static async getListOfUserProposals(userId:string){
+    const [result]=await pool.query(`SELECT * FROM proposals WHERE userId=?`,[userId])
     return result as ProposalBaseInfo[]
   }
 }

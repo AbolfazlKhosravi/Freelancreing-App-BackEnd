@@ -3,7 +3,9 @@ import createHttpError from "http-errors";
 import ProposaleModel from "../../models/proposale-model";
 import {
   RequestChangeProposalStatus,
+  RequestGetListOfProposals,
   ResponseChangeProposalStatus,
+  ResponseGetListOfProposals,
 } from "../../router/proposal";
 import Controller from "./controller";
 import ProjectModel from "../../models/project-model";
@@ -69,6 +71,22 @@ class ProposalController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         message: messages[status],
+      },
+    });
+  }
+  async getListOfProposals(
+    req: RequestGetListOfProposals,
+    res: ResponseGetListOfProposals
+  ) {
+    const user = req.user;
+    if (!user) throw createHttpError.BadRequest("کاربری یافت نشد");
+
+    const proposals = await ProposaleModel.getListOfUserProposals(user.id);
+
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        proposals,
       },
     });
   }
