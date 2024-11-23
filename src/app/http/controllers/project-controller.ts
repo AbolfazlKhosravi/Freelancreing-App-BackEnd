@@ -4,6 +4,7 @@ import {
   RequestAddNewProject,
   RequestChangeProjectStatus,
   RequestDeleteProject,
+  RequestGetListOfProjects,
   RequestGetOwnerProjects,
   RequestGetProjectByIdAndProposals,
   RequestUpdateProject,
@@ -11,6 +12,7 @@ import {
   ResponseBasicOwnerProjectsInfo,
   ResponseChangeProjectStatus,
   ResponseDeleteProject,
+  ResponseGetListOfProjects,
   ResponseGetOwnerProjects,
   ResponseGetProjectByIdAndProposals,
   ResponseUpdateProject,
@@ -167,6 +169,17 @@ class ProjectController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         projectInfoAndProposals,
+      },
+    });
+  }
+  async getListOfProjects(_req:RequestGetListOfProjects, res:ResponseGetListOfProjects) {
+  
+  const projects=await ProjectModel.getOwnerProjects()
+
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        projects,
       },
     });
   }

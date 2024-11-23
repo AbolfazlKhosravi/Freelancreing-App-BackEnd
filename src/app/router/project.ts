@@ -15,6 +15,21 @@ import { UserType } from "../models/userAuth-model";
 const router = express.Router();
 const { ROLES } = constants;
 
+export type RequestGetListOfProjects = Request;
+export type ResponseGetListOfProjects = Response<{
+  statusCode: number;
+  data: {
+    projects: ProjectType[];
+  };
+}>;
+
+router.get(
+  "/list",
+  tryCatchHandler<RequestGetListOfProjects, ResponseGetListOfProjects>(
+    ProjectController.getListOfProjects
+  )
+);
+
 // GET_OENER_PROJECTS_TYPE
 export type RequestGetOwnerProjects = Request;
 export type ResponseGetOwnerProjects = Response<{
@@ -29,15 +44,15 @@ export type ResponseGetOwnerProjects = Response<{
   };
 }>;
 
-export type ResponseBasicOwnerProjectsInfo=Response<{
+export type ResponseBasicOwnerProjectsInfo = Response<{
   statusCode: number;
   data: {
     basicProjectsInfo: {
       ownerProjects: ProjectType[];
-      proposalsCount:number,
+      proposalsCount: number;
     };
   };
-}>
+}>;
 router.get(
   "/owner-projects",
   authorize(ROLES.ADMIN, ROLES.OWNER),
