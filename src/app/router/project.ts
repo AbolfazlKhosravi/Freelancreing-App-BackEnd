@@ -28,11 +28,29 @@ export type ResponseGetOwnerProjects = Response<{
     };
   };
 }>;
+
+export type ResponseBasicOwnerProjectsInfo=Response<{
+  statusCode: number;
+  data: {
+    basicProjectsInfo: {
+      ownerProjects: ProjectType[];
+      proposalsCount:number,
+    };
+  };
+}>
 router.get(
   "/owner-projects",
   authorize(ROLES.ADMIN, ROLES.OWNER),
   tryCatchHandler<RequestGetOwnerProjects, ResponseGetOwnerProjects>(
     ProjectController.getListOfOwnerProjects
+  )
+);
+
+router.get(
+  "/owner-projects-basic-info",
+  authorize(ROLES.ADMIN, ROLES.OWNER),
+  tryCatchHandler<RequestGetOwnerProjects, ResponseBasicOwnerProjectsInfo>(
+    ProjectController.getBasicOwnerProjectsInfo
   )
 );
 
@@ -118,9 +136,7 @@ router.patch(
 
 // get ProjectById And Proposals
 
-export type RequestGetProjectByIdAndProposals = Request<
-  { id: string }
->;
+export type RequestGetProjectByIdAndProposals = Request<{ id: string }>;
 export type ResponseGetProjectByIdAndProposals = Response<{
   statusCode: number;
   data: {
@@ -131,11 +147,13 @@ export type ResponseGetProjectByIdAndProposals = Response<{
   };
 }>;
 
-
 router.get(
   "/:id",
   authorize(ROLES.ADMIN, ROLES.OWNER),
-  tryCatchHandler<RequestGetProjectByIdAndProposals,ResponseGetProjectByIdAndProposals>(ProjectController.getProjectByIdAndProposals)
+  tryCatchHandler<
+    RequestGetProjectByIdAndProposals,
+    ResponseGetProjectByIdAndProposals
+  >(ProjectController.getProjectByIdAndProposals)
 );
 
 export default router;

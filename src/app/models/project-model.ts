@@ -50,6 +50,9 @@ type CereateProject = [
 interface ChangeProjectStatus {
   changedRows: number;
 }
+interface OwnerProjectsProposalsCount {
+  count: number;
+}
 
 class ProjectModel {
   static async getOwnerProjects(userId: string = "") {
@@ -142,6 +145,26 @@ class ProjectModel {
       freelancers,
     };
   }
+  static async getBasicOwnerProjectsInfo(userId: string) {
+    const ownerProjects = await ProjectModel.getOwnerProjects(userId);
+    if (!ownerProjects.length) {
+      return {
+        ownerProjects: [],
+        proposalsCount: 0,
+      };
+    }
+
+    const [result] = await pool.query(
+      `SELECT COUNT(*) as count  FROM proposals WHERE userId=?`,
+      [userId]
+    );
+    const [proposalsInfo] = result as OwnerProjectsProposalsCount[];
+ const proposalsCount=   proposalsInfo.count
+    return {
+      ownerProjects,
+      proposalsCount,
+    };
+  }
   static async getProjectByid(id: string) {
     const [result] = await pool.query(`SELECT * FROM projects WHERE id = ?`, [
       id,
@@ -196,11 +219,20 @@ class ProjectModel {
     return result as ChangeProjectStatus;
   }
   static async getProjectProposals(id: string) {
-    const [result] = await pool.query(`SELECT p.*,u.name as userName FROM proposals as p INNER JOIN  users as u on p.userId=u.id where p.projectId=?`,[id]);
+    const [result] = await pool.query(
+      `SELECT p.*,u.name as userName FROM proposals as p INNER JOIN  users as u on p.userId=u.id where p.projectId=?`,
+      [id]
+    );
     return result as Proposal[];
   }
-  static async AcceptFreelancer(projectId:string, freelancerId:string|null){
-    const [result]=await pool.query(`UPDATE projects SET freelancer= ? WHERE id=?`,[freelancerId,projectId]);
+  static async AcceptFreelancer(
+    projectId: string,
+    freelancerId: string | null
+  ) {
+    const [result] = await pool.query(
+      `UPDATE projects SET freelancer= ? WHERE id=?`,
+      [freelancerId, projectId]
+    );
     return result as deleteProject;
   }
 }

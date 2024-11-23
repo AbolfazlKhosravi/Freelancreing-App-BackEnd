@@ -8,6 +8,7 @@ import {
   RequestGetProjectByIdAndProposals,
   RequestUpdateProject,
   ResponseAddNewProject,
+  ResponseBasicOwnerProjectsInfo,
   ResponseChangeProjectStatus,
   ResponseDeleteProject,
   ResponseGetOwnerProjects,
@@ -39,6 +40,25 @@ class ProjectController extends Controller {
       statusCode: HttpStatus.OK,
       data: {
         fullProjectsInfo,
+      },
+    });
+  }
+  async getBasicOwnerProjectsInfo(
+    req: RequestGetOwnerProjects,
+    res: ResponseBasicOwnerProjectsInfo
+  ) {
+    const userId = req.user?.id;
+
+    if (!userId) throw createHttpError.Unauthorized("کاربری یافت نشد !");
+
+    const basicProjectsInfo = await ProjectModel.getBasicOwnerProjectsInfo(
+      userId
+    );
+
+    res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        basicProjectsInfo,
       },
     });
   }
@@ -136,7 +156,7 @@ class ProjectController extends Controller {
     const projectProposals = await ProjectModel.getProjectProposals(id);
     const projectInfoAndProposals = {
       projectInfo,
-      proposalList:projectProposals
+      proposalList: projectProposals,
     };
     res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
