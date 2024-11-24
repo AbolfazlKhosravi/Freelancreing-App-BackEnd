@@ -17,6 +17,7 @@ This project is a Freelancering system API built using Node.js, Express, MySQL, 
 To set up the database schema, use the following SQL statements:
 
 ```sql
+
 CREATE TABLE `otp` (
   `user_id` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `code` int NOT NULL,
@@ -24,6 +25,8 @@ CREATE TABLE `otp` (
   PRIMARY KEY (`user_id`),
   CONSTRAINT `user_id_f1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `project_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(225) COLLATE utf8mb3_unicode_ci NOT NULL,
@@ -40,6 +43,8 @@ CREATE TABLE `project_categories` (
   CONSTRAINT `parentId_key` FOREIGN KEY (`parentId`) REFERENCES `project_categories` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `chk_type` CHECK ((`type` in (_utf8mb3'project',_utf8mb3'comment',_utf8mb3'post',_utf8mb3'ticket')))
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `project_tags` (
   `tag_id` int NOT NULL,
   `project_id` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
@@ -49,6 +54,8 @@ CREATE TABLE `project_tags` (
   CONSTRAINT `projectId_key` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `tagId_key` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `projects` (
   `id` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `title` varchar(80) COLLATE utf8mb3_unicode_ci NOT NULL,
@@ -70,6 +77,8 @@ CREATE TABLE `projects` (
   CONSTRAINT `owner-id` FOREIGN KEY (`owner`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `chk_status` CHECK ((`status` in (_utf8mb3'OPEN',_utf8mb3'CLOSED')))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `proposals` (
   `id` int NOT NULL AUTO_INCREMENT,
   `projectId` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
@@ -86,17 +95,23 @@ CREATE TABLE `proposals` (
   CONSTRAINT `userId_key` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_status_proposals` CHECK ((`status` in (0,1,2)))
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `roles` (
   `id` tinyint NOT NULL,
   `title` varchar(45) COLLATE utf8mb3_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `tags` (
   `id` int NOT NULL AUTO_INCREMENT,
   `type` varchar(100) COLLATE utf8mb3_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `type_UNIQUE` (`type`)
 ) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `user_roles` (
   `role_id` tinyint NOT NULL DEFAULT '3',
   `user_id` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
@@ -106,6 +121,8 @@ CREATE TABLE `user_roles` (
   CONSTRAINT `role_id_key` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `user_id_key` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
+
 CREATE TABLE `users` (
   `id` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   `name` varchar(100) COLLATE utf8mb3_unicode_ci DEFAULT NULL,
@@ -127,6 +144,7 @@ CREATE TABLE `users` (
   CONSTRAINT `users_chk_2` CHECK ((`isActive` in (0,1))),
   CONSTRAINT `users_chk_3` CHECK ((`status` in (0,1,2)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+
 
 ```
 ## Database Schema Setup For Stored Procedures
@@ -154,6 +172,7 @@ BEGIN
  INSERT INTO otp (user_id,code,expiresIn) VALUES (uuid_jenerate,otp_code,otp_expiresIn);
  END IF ;
 END;
+
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateProject`(
   IN inputTitle VARCHAR(80),
@@ -209,6 +228,7 @@ creatingProject:BEGIN
 
 END;
 
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getUserInfo`(IN inputId VARCHAR(40))
 BEGIN
 SELECT *
@@ -224,6 +244,7 @@ SELECT id,title,user_id
    WHERE ur.user_id = inputId;
 
 END;
+
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdateProject`(
   IN inputTitle VARCHAR(80),
@@ -282,6 +303,7 @@ updatingProject:BEGIN
   SELECT error AS error_exist;
 
 END;
+
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `updateUserAndGetFullInfo`(IN inputId VARCHAR(40),IN inputName VARCHAR(100),IN inputEmail VARCHAR(250),IN inputRole TINYINT)
 BEGIN
